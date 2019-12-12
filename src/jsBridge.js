@@ -55,7 +55,9 @@ function onInit() {
 }
 onInit()
 
-export default {
+const JsBridge = {
   registerHandler,
   callHandler
 }
+window.JsBridge = JsBridge
+export default JsBridge

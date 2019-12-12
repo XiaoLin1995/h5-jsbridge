@@ -171,10 +171,12 @@ function onInit() {
 }
 onInit();
 
-exports.default = {
+var JsBridge = {
   registerHandler: registerHandler,
   callHandler: callHandler
 };
+window.JsBridge = JsBridge;
+exports.default = JsBridge;
 
 /***/ }),
 /* 1 */
