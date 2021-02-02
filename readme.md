@@ -16,14 +16,14 @@ import JsBridge from 'h5-jsbridge'
 /**
  * 函数描述：js注册方法给app调用
  *
- * JsBridge.registerHandler(name, callback(data, callback))
+ * jsBridge.registerHandler(name, callback(data, appCallback))
  * @param {String} name 方法名
  * @param {Function} callback 回调函数
  * @param {Any} callback.data app返回的数据
- * @param {Function} callback.callback app返回的回调
+ * @param {Function} callback.appCallback app返回的回调
  * @return
  */
-JsBridge.registerHandler('funName', function (data, callback) {
+JsBridge.registerHandler('funName', function (data, appCallback) {
   console.log(data)
 }) 
 

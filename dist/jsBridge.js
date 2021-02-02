@@ -125,17 +125,21 @@ var _getBrowerInfo = (0, _utils.getBrowerInfo)(),
 /**
  * 函数描述：js注册方法给app调用
  *
- * jsBridge.registerHandler(name, callback(data, callback))
+ * jsBridge.registerHandler(name, callback(data, appCallback))
  * @param {String} name 方法名
  * @param {Function} callback 回调函数
  * @param {Any} callback.data app返回的数据
- * @param {Function} callback.callback app返回的回调
+ * @param {Function} callback.appCallback app返回的回调
  * @return
  */
 
 
 function registerHandler(name, callback) {
   var connectBridge = function connectBridge(bridge) {
+    bridge.registerHandler(name, function (data, appCallback) {
+      if ((0, _utils.isJSON)(data)) data = JSON.parse(data);
+      if (typeof callback === 'function') callback(data, appCallback);
+    });
     bridge.registerHandler(name, callback);
   };
   if (isIOS) {
