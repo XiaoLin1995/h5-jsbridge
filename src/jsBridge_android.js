@@ -1,10 +1,9 @@
 export default function connectJSBridge(callback) {
   if (window.WebViewJavascriptBridge) {
-    callback(WebViewJavascriptBridge)
-  }
-  else {
+    callback(window.WebViewJavascriptBridge)
+  } else {
     document.addEventListener('WebViewJavascriptBridgeReady', function () {
-      callback(WebViewJavascriptBridge)
+      callback(window.WebViewJavascriptBridge)
     }, false)
   }
 }

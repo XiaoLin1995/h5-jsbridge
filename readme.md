@@ -1,11 +1,8 @@
 # H5-JSBridge
 
-> Javascript bridge android/ios webview
-
+> Javascript bridge [android](https://github.com/lzyzsd/JsBridge)/[ios](https://github.com/marcuswestin/WebViewJavascriptBridge) webview
 
 ## Install
-
-You can get it on npm.
 
 ```
 npm install h5-jsbridge --save
@@ -14,26 +11,32 @@ npm install h5-jsbridge --save
 ## Use
 
 ```js
-import jsBridge from 'h5-jsbridge'
+import JsBridge from 'h5-jsbridge'
 
 /**
+ * 函数描述：js注册方法给app调用
  *
- * jsBridge.registerHandler(method, callBack(response))
- * @param method {string} funName
- * @return {Object} callback
+ * JsBridge.registerHandler(name, callback(data, callback))
+ * @param {String} name 方法名
+ * @param {Function} callback 回调函数
+ * @param {Any} callback.data app返回的数据
+ * @param {Function} callback.callback app返回的回调
+ * @return
  */
-jsBridge.registerHandler('funName', function (data) {
-    console.log(data)
+JsBridge.registerHandler('funName', function (data, callback) {
+  console.log(data)
 }) 
 
 /**
+ * 函数描述：js调用app方法
  *
- * jsBridge.callHandler(method, data, callBack(response))
- * @param method {string} funName
- * @param data {Object} params
- * @return {Object} callback
+ * JsBridge.callHandler(name, params, callback)
+ * @param {String} name 方法名
+ * @param {Object} params 参数
+ * @param {Function} callback 回调函数
+ * @return
  */
-jsBridge.callHandler('funName', { event: 'click' }, function (data) {
-    console.log(data)
+JsBridge.callHandler('funName', { event: 'click' }, function (data) {
+  console.log(data)
 })
 ```

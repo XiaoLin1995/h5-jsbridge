@@ -118,52 +118,58 @@ var _jsBridge_android2 = _interopRequireDefault(_jsBridge_android);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var deviceSystem = (0, _utils.getDeviceSystem)();
+var _getBrowerInfo = (0, _utils.getBrowerInfo)(),
+    isAndroid = _getBrowerInfo.isAndroid,
+    isIOS = _getBrowerInfo.isIOS;
 
 /**
- * 函数描述：webView调用JS事件
+ * 函数描述：js注册方法给app调用
  *
- * jsBridge.registerHandler(method, callBack(response))
- * @param method {string} 方法名
- * @return {Object} 回调
+ * jsBridge.registerHandler(name, callback(data, callback))
+ * @param {String} name 方法名
+ * @param {Function} callback 回调函数
+ * @param {Any} callback.data app返回的数据
+ * @param {Function} callback.callback app返回的回调
+ * @return
  */
+
+
 function registerHandler(name, callback) {
-  if (deviceSystem === 'iOS') {
-    (0, _jsBridge_ios2.default)(function (bridge) {
-      bridge.registerHandler(name, callback);
-    });
-  } else if (deviceSystem === 'Android') {
-    (0, _jsBridge_android2.default)(function (bridge) {
-      bridge.registerHandler(name, callback);
-    });
+  var connectBridge = function connectBridge(bridge) {
+    bridge.registerHandler(name, callback);
+  };
+  if (isIOS) {
+    (0, _jsBridge_ios2.default)(connectBridge);
+  } else if (isAndroid) {
+    (0, _jsBridge_android2.default)(connectBridge);
   }
 }
 
 /**
- * 函数描述：js调用webview事件
+ * 函数描述：js调用app方法
  *
- * jsBridge.callHandler(method, data, callBack(response))
- * @param method {string} 方法名
- * @param data {Object} 参数
- * @return {Object} 回调
+ * jsBridge.callHandler(name, params, callback)
+ * @param {String} name 方法名
+ * @param {Object} params 参数
+ * @param {Function} callback 回调函数
+ * @return
  */
 function callHandler(name, params, callback) {
-  if (deviceSystem === 'iOS') {
-    (0, _jsBridge_ios2.default)(function (bridge) {
-      bridge.callHandler(name, params, callback);
+  var connectBridge = function connectBridge(bridge) {
+    bridge.callHandler(name, params, function (data) {
+      if ((0, _utils.isJSON)(data)) data = JSON.parse(data);
+      if (typeof callback === 'function') callback(data);
     });
-  } else if (deviceSystem === 'Android') {
-    (0, _jsBridge_android2.default)(function (bridge) {
-      bridge.callHandler(name, params, callback);
-    });
+  };
+  if (isIOS) {
+    (0, _jsBridge_ios2.default)(connectBridge);
+  } else if (isAndroid) {
+    (0, _jsBridge_android2.default)(connectBridge);
   }
 }
 
-/**
- * android 不先 init，无法触发回调
- */
 function onInit() {
-  if (deviceSystem === 'Android') {
+  if (isAndroid) {
     (0, _jsBridge_android2.default)(function (bridge) {
       bridge.init();
     });
@@ -188,21 +194,26 @@ exports.default = JsBridge;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getDeviceSystem = getDeviceSystem;
-function getDeviceSystem() {
-  var ua = window.navigator.userAgent;
-  var reg = {
-    iOS: /(iPhone|iPad|iPod|iOS)/i,
-    android: /(Android)/i,
-    winPhone: /(?:Windows Phone)/i,
-    symbianOS: /(?:SymbianOS)/i
-  };
-  if (reg.iOS.test(ua)) return 'iOS';
-  if (reg.android.test(ua)) return 'Android';
-  if (reg.winPhone.test(ua)) return 'Windows Phone)';
-  if (reg.symbianOS.test(ua)) return 'Symbian)';
+exports.getBrowerInfo = getBrowerInfo;
+exports.isJSON = isJSON;
+function getBrowerInfo() {
+  var ua = window.navigator.userAgent.toLowerCase();
+  var isAndroid = /Android/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-  return 'PC';
+  return { isIOS: isIOS, isAndroid: isAndroid };
+}
+
+function isJSON(str) {
+  if (typeof str === 'string') {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
 }
 
 /***/ }),
@@ -217,12 +228,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = connectJSBridge;
 function connectJSBridge(callback) {
-  if (window.WebViewJavascriptBridge) {
-    return callback(WebViewJavascriptBridge);
-  }
-  if (window.WVJBCallbacks) {
-    return window.WVJBCallbacks.push(callback);
-  }
+  if (window.WebViewJavascriptBridge) return callback(window.WebViewJavascriptBridge);
+  if (window.WVJBCallbacks) return window.WVJBCallbacks.push(callback);
   window.WVJBCallbacks = [callback];
   var WVJBIframe = document.createElement('iframe');
   WVJBIframe.style.display = 'none';
@@ -246,10 +253,10 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = connectJSBridge;
 function connectJSBridge(callback) {
   if (window.WebViewJavascriptBridge) {
-    callback(WebViewJavascriptBridge);
+    callback(window.WebViewJavascriptBridge);
   } else {
     document.addEventListener('WebViewJavascriptBridgeReady', function () {
-      callback(WebViewJavascriptBridge);
+      callback(window.WebViewJavascriptBridge);
     }, false);
   }
 }

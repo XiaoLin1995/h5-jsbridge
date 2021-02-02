@@ -1,58 +1,60 @@
-import { getDeviceSystem } from './libs/utils'
+import { getBrowerInfo, isJSON } from './libs/utils'
 import connectIOSBridge from './jsBridge_ios'
 import connectAndroidBridge from './jsBridge_android'
 
-const deviceSystem = getDeviceSystem()
+const { isAndroid, isIOS } = getBrowerInfo()
 
 /**
- * 函数描述：webView调用JS事件
+ * 函数描述：js注册方法给app调用
  *
- * jsBridge.registerHandler(method, callBack(response))
- * @param method {string} 方法名
- * @return {Object} 回调
+ * jsBridge.registerHandler(name, callback(data, callback))
+ * @param {String} name 方法名
+ * @param {Function} callback 回调函数
+ * @param {Any} callback.data app返回的数据
+ * @param {Function} callback.callback app返回的回调
+ * @return
  */
 function registerHandler(name, callback) {
-  if (deviceSystem === 'iOS') {
-    connectIOSBridge((bridge) => {
-      bridge.registerHandler(name, callback)
-    })
-  } else if (deviceSystem === 'Android') {
-    connectAndroidBridge((bridge) => {
-      bridge.registerHandler(name, callback)
-    })
+  const connectBridge = (bridge) => {
+    bridge.registerHandler(name, callback)
+  }
+  if (isIOS) {
+    connectIOSBridge(connectBridge)
+  } else if (isAndroid) {
+    connectAndroidBridge(connectBridge)
   }
 }
 
 /**
- * 函数描述：js调用webview事件
+ * 函数描述：js调用app方法
  *
- * jsBridge.callHandler(method, data, callBack(response))
- * @param method {string} 方法名
- * @param data {Object} 参数
- * @return {Object} 回调
+ * jsBridge.callHandler(name, params, callback)
+ * @param {String} name 方法名
+ * @param {Object} params 参数
+ * @param {Function} callback 回调函数
+ * @return
  */
 function callHandler(name, params, callback) {
-  if (deviceSystem === 'iOS') {
-    connectIOSBridge((bridge) => {
-      bridge.callHandler(name, params, callback)
+  const connectBridge = (bridge) => {
+    bridge.callHandler(name, params, (data) => {
+      if (isJSON(data)) data = JSON.parse(data)
+      if (typeof callback === 'function') callback(data)
     })
-  } else if (deviceSystem === 'Android') {
-    connectAndroidBridge((bridge) => {
-      bridge.callHandler(name, params, callback)
-    })
+  }
+  if (isIOS) {
+    connectIOSBridge(connectBridge)
+  } else if (isAndroid) {
+    connectAndroidBridge(connectBridge)
   }
 }
 
-/**
- * android 不先 init，无法触发回调
- */
 function onInit() {
-  if (deviceSystem === 'Android') {
-    connectAndroidBridge((bridge) => {
+  if (isAndroid) {
+     connectAndroidBridge((bridge) => {
       bridge.init()
-    })
-  }
-}
+     })
+   }
+ }
 onInit()
 
 const JsBridge = {

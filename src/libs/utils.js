@@ -1,15 +1,19 @@
-export function getDeviceSystem() {
-  const ua = window.navigator.userAgent
-  const reg = {
-    iOS: /(iPhone|iPad|iPod|iOS)/i,
-    android: /(Android)/i,
-    winPhone: /(?:Windows Phone)/i,
-    symbianOS: /(?:SymbianOS)/i
-  }
-  if (reg.iOS.test(ua)) return 'iOS'
-  if (reg.android.test(ua)) return 'Android'
-  if (reg.winPhone.test(ua)) return 'Windows Phone)'
-  if (reg.symbianOS.test(ua)) return 'Symbian)'
+export function getBrowerInfo() {
+  const ua = window.navigator.userAgent.toLowerCase()
+  const isAndroid = /Android/i.test(ua)
+  const isIOS = /iPhone|iPad|iPod/i.test(ua)
 
-  return 'PC'
+  return { isIOS, isAndroid }
+}
+
+export function isJSON(str) {
+  if (typeof str === 'string') {
+    try {
+      JSON.parse(str)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
+  return false
 }
